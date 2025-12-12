@@ -70,7 +70,8 @@
         .photo-placeholder img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;      /* change de cover à contain */
+            background: white;         /* fond blanc si l'image ne remplit pas tout */
         }
 
         .placeholder-text {
