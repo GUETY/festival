@@ -15,15 +15,16 @@
         body {
             font-family: Arial, sans-serif;
             background: #f5f5f5;
-            padding: 20px;
+            padding: 12px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 540px;
+            width: 100%;
             margin: 0 auto;
             background: white;
             border-radius: 10px;
-            padding: 20px;
+            padding: 16px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
@@ -42,7 +43,7 @@
 
         .photo-placeholder {
             position: absolute;
-            top: 120px;      /* remonté davantage */
+            top: 120px;      /* desktop */
             left: 40px;
             width: 140px;
             height: 140px;
@@ -142,6 +143,36 @@
             width: 95%;
             text-align: center;
             z-index: 10;
+        }
+
+        /* Responsive mobile */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 12px;
+            }
+            .photo-placeholder {
+                top: 95px;   /* remonte un peu plus sur mobile */
+                left: 22px;  /* plus près du bord sur mobile */
+                width: 120px;
+                height: 120px;
+            }
+            .placeholder-text {
+                font-size: 11px;
+            }
+            .placeholder-icon {
+                font-size: 26px;
+            }
+            .photo-text {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            .btn {
+                font-size: 15px;
+                padding: 10px;
+            }
         }
     </style>
 </head>
