@@ -158,8 +158,8 @@
             .photo-placeholder {
                 top: 40px;
                 left: 5px;
-                width: 130px;      /* réduit */
-                height: 160px;     /* réduit */
+                width: 130px;
+                height: 160px;
                 border: 2px solid white;
             }
             .placeholder-text {
@@ -201,7 +201,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         const photoInput = document.getElementById('photoInput');
         const photoPlaceholder = document.getElementById('photoPlaceholder');
@@ -210,7 +209,6 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const affiche = document.getElementById('affiche');
-        const photoText = document.getElementById('photoText');
 
         // Clic sur le bouton upload
         uploadBtn.addEventListener('click', () => photoInput.click());
@@ -238,28 +236,114 @@
         }
 
         // Télécharger l'affiche
-        downloadBtn.addEventListener('click', () => {
-            // Masquer temporairement les bordures en pointillés
-            photoPlaceholder.style.border = '3px solid white';
-            
-            html2canvas(affiche, {
-                backgroundColor: null,
-                scale: 4,              // qualité maximale
-                useCORS: true,
-                allowTaint: true,
-                logging: false,
-                imageTimeout: 0,
-                width: affiche.offsetWidth,
-                height: affiche.offsetHeight
-            }).then(canvas => {
-                // Restaurer les bordures
-                photoPlaceholder.style.border = '2px dashed rgba(255, 255, 255, 0.8)';
+        downloadBtn.addEventListener('click', async () => {
+            try {
+                // Créer un canvas manuel pour un meilleur contrôle
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
                 
+                // Définir la taille du canvas (haute résolution)
+                const scale = 3;
+                canvas.width = affiche.offsetWidth * scale;
+                canvas.height = affiche.offsetHeight * scale;
+                
+                // Charger l'image de fond
+                const bgImg = new Image();
+                bgImg.crossOrigin = 'anonymous';
+                await new Promise((resolve, reject) => {
+                    bgImg.onload = resolve;
+                    bgImg.onerror = reject;
+                    bgImg.src = 'festival.jpeg';
+                });
+                
+                // Dessiner l'image de fond
+                ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+                
+                // Si une photo est uploadée
+                if (userPhoto.src && userPhoto.style.display !== 'none') {
+                    const photoImg = new Image();
+                    photoImg.crossOrigin = 'anonymous';
+                    await new Promise((resolve) => {
+                        photoImg.onload = resolve;
+                        photoImg.src = userPhoto.src;
+                    });
+                    
+                    // Calculer les dimensions et position de la photo
+                    const photoRect = photoPlaceholder.getBoundingClientRect();
+                    const afficheRect = affiche.getBoundingClientRect();
+                    
+                    const x = (photoRect.left - afficheRect.left) * scale;
+                    const y = (photoRect.top - afficheRect.top) * scale;
+                    const w = photoRect.width * scale;
+                    const h = photoRect.height * scale;
+                    
+                    // Calculer le ratio pour object-fit: cover
+                    const imgRatio = photoImg.width / photoImg.height;
+                    const boxRatio = w / h;
+                    
+                    let sx, sy, sw, sh;
+                    
+                    if (imgRatio > boxRatio) {
+                        // Image plus large
+                        sh = photoImg.height;
+                        sw = sh * boxRatio;
+                        sx = (photoImg.width - sw) / 2;
+                        sy = 0;
+                    } else {
+                        // Image plus haute
+                        sw = photoImg.width;
+                        sh = sw / boxRatio;
+                        sx = 0;
+                        sy = (photoImg.height - sh) / 2;
+                    }
+                    
+                    // Sauvegarder le contexte
+                    ctx.save();
+                    
+                    // Créer un chemin arrondi
+                    const radius = 10 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x + radius, y);
+                    ctx.lineTo(x + w - radius, y);
+                    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+                    ctx.lineTo(x + w, y + h - radius);
+                    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                    ctx.lineTo(x + radius, y + h);
+                    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+                    ctx.lineTo(x, y + radius);
+                    ctx.quadraticCurveTo(x, y, x + radius, y);
+                    ctx.closePath();
+                    ctx.clip();
+                    
+                    // Dessiner la photo avec object-fit: cover
+                    ctx.drawImage(photoImg, sx, sy, sw, sh, x, y, w, h);
+                    
+                    // Restaurer le contexte
+                    ctx.restore();
+                    
+                    // Dessiner le texte "J'Y SERAI"
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    const textY = y + h - (20 * scale);
+                    const textHeight = 30 * scale;
+                    ctx.fillRect(x + (w * 0.025), textY, w * 0.95, textHeight);
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${14 * scale}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText("J'Y SERAI", x + w/2, textY + textHeight/2);
+                }
+                
+                // Télécharger
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.download = 'affiche-jyserai.png';
                 link.click();
-            });
+                
+            } catch (error) {
+                console.error('Erreur lors du téléchargement:', error);
+                alert('Erreur lors du téléchargement. Veuillez réessayer.');
+            }
         });
     </script>
 </body>
